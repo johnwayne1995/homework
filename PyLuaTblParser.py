@@ -5,6 +5,7 @@ class PyLuaTblParser:
         self.special_signal={'\t','\n','\\','\'','\"','\a','\b','\f','\r','\v'}
         self.string_loc=list()#字符串的位置下标
         # self.DeepLayer=list()#记录每个下标所在层深度的list
+        self.raw = ''#初始输入
         self.norm_Table='' #去空格标准化后的table
         self.Dict=dict()#python格式字典
         pass
@@ -70,7 +71,7 @@ class PyLuaTblParser:
         stack_quotation_single = list()
         stack_quotation_double = list()
         equal_num=0#等号出现的次数，方便定函数find_key_value中定keys的数量
-
+        index=0
         for s in input:
             # print(s,equal_num,len(stack_bracket),len(stack_quotation_double))
             if(s=='=' and len(stack_bracket)==0 and len(stack_quotation_single) ==0 and len(stack_quotation_double) ==0):
@@ -88,51 +89,35 @@ class PyLuaTblParser:
             if(s=="{" and len(stack_quotation_single) ==0 and len(stack_quotation_double) ==0):
                 stack_bracket.append('into_layer')
             if(s=="}" and len(stack_quotation_single) ==0 and len(stack_quotation_double) ==0):
-
                 try:
                     stack_bracket.pop()
                 except:
-                    if (ord(s)//10%10 == 0):
-                        raise Exception(s)
-                    if (ord(s)//10%10 == 1):
-                        raise Exception(s)
-                    if (ord(s)//10%10 == 2):
-                        raise Exception(s)
-                    if (ord(s)//10%10 == 3):
-                        raise Exception(s)
-                    if (ord(s)//10%10 == 4):
-                        raise Exception(s)
-                    if (ord(s)//10%10 == 5):
-                        raise Exception(s)
-                    if (ord(s)//10%10 == 6):
-                        raise Exception(s)
-                    if (ord(s)//10%10 == 7):
-                        raise Exception(s)
-                    if (ord(s)//10%10 == 8):
-                        raise Exception(s)
-                    if (ord(s)//10%10 == 9):
-                        raise Exception(s)
-                    if (ord(s)%10 == 0):
-                        raise Exception(s)
-                    if (ord(s)%10 == 1):
-                        raise Exception(s)
-                    if (ord(s)%10 == 2):
-                        raise Exception(s)
-                    if (ord(s)%10 == 3):
-                        raise Exception(s)
-                    if (ord(s)%10 == 4):
-                        raise Exception(s)
-                    if (ord(s)%10 == 5):
-                        raise Exception(s)
-                    if (ord(s)%10 == 6):
-                        raise Exception(s)
-                    if (ord(s)%10 == 7):
-                        raise Exception(s)
-                    if (ord(s)%10 == 8):
-                        raise Exception(s)
-                    if (ord(s)%10 == 9):
-                        raise Exception(s)
+                    if(index==0):
+                        raise Exception(index)
+                    if (index >50):
+                        raise Exception(index)
+                    # if (index ==11):
+                    #     raise Exception(index)
+                    # if (index ==12):
+                    #     raise Exception(index)
+                    # if (index ==13):
+                    #     raise Exception(index)
+                    # if (index ==14):
+                    #     raise Exception(index)
+                    # if (index ==15):
+                    #     raise Exception(index)
+                    # if (index ==16):
+                    #     raise Exception(index)
+                    # if (index == 17):
+                    #     raise Exception(index)
+                    # if (index == 18):
+                    #     raise Exception(index)
+                    # if (index == 19):
+                    #     raise Exception(index)
+                    # if (index == 20):
+                    #     raise Exception(index)
 
+            index+=1
         return equal_num
 
     def find_key_value(self,input):
@@ -194,6 +179,7 @@ class PyLuaTblParser:
         last_comma = 0
         index = 0
         for s in input:
+
             if ((s == ',' or s=='\t') and len(stack_quotation_single) == 0 and len(stack_quotation_double) == 0):#\t是制表符，暂未测试
                 sum+=1
                 tmp_val=input[last_comma:index]
@@ -255,6 +241,30 @@ class PyLuaTblParser:
                     stack_quotation_double.pop()
         return s_Commentsless
 
+    def rm_slash_n(self, input):
+        '''
+        合并到一行
+        :param input:
+        :return:
+        '''
+        s_blankless=''
+        stack_quotation_single = list()
+        stack_quotation_double = list()
+        index=0
+        for s in input:
+            # if (s in self.special_signal):
+            #     s_blankless += '\'
+            if((ord(s)==10 or s=='\n') and len(stack_quotation_single) == 0 and len(stack_quotation_double) == 0):
+                s_blankless += '\\n'
+            else:
+                if (s=='\\'):
+                    s_blankless += '\\'
+                else:
+                    s_blankless += s
+
+
+            index+=1
+        return s_blankless
 
     def rmblank(self,input):
         '''
@@ -323,8 +333,10 @@ class PyLuaTblParser:
         :return:
         '''
         try:
-            self.norm_Table = self.rmComments(s)  # 去注释
-            self.norm_Table=self.rmblank(self.norm_Table)#去空格规范化Table
+            self.raw=s
+            # self.norm_Table = self.rmComments(s)  # 去注释
+            # self.norm_Table=self.rmblank(self.norm_Table)#去空格规范化Table
+            self.norm_Table = self.rm_slash_n(s)  # 去空格规范化Table
 
         except:
             raise Exception("The format of input is wrong")
@@ -433,10 +445,11 @@ class PyLuaTblParser:
         返回一个dict，包含类中的数据
         :return:
         '''
+        print self.norm_Table
+        return self.norm_Table
+        # return self.raw
+        # return self.child_trans(self.norm_Table)#可自身递归的函数
 
-
-        return self.child_trans(self.norm_Table)#可自身递归的函数
-        pass
 
     def dumpLuaTable(self,f):
         '''
@@ -444,7 +457,7 @@ class PyLuaTblParser:
         :return:
         '''
 
-        print self.norm_Table
+        # print self.norm_Table
         with open(f, 'w') as file_object:
             file_object.write(self.norm_Table)
         file_object.close()
@@ -466,17 +479,16 @@ if __name__ == '__main__':
     test_str = '{array={ 65,23,5,}, dict={mixed={43,54.33,false,9,string = "value",},array={3,6,4,},string="value",},}'
     test_str = '{array={ 65,23,5,}, dict={mixed={43,54.33,false,9,string = "value",},array={3,6,4,},string="value",},}'
     test_str = '{array={ 65,23,5,}, dict={mixed={43,54.33,false,9,string = "value",},array={3,6,4,},string="value",},}'
-    test_str = '{root={"Test Pattern String",member={"array with 1 element",},\n["object with 1 member"]={"array with 1 element",},},}'
-    # test_str = '{root={"Test Pattern String",--{"object with 1 member"={"array with 1 element",},},{["object with 1 member"]={"array with 1 element",},},{},[]'
+    test_str = '{root={"Test Pattern String",--member={"array with 1 element",},\n["object with 1 member"]={"array with 1 element",},},}'
+    test_str= '{{\nroot = {\n\t"Test Pattern String",\n\t-- {"object with 1 member" = {"array with 1 element",},},\n\t{["object with 1 member"] = {"array with 1 element",},},\n\t{},\n\t[99] = -42,\n\t[98] = {{}},\n\t[97] = {{},{}},\n\t[96] = {{}, 1, 2, nil},\n\t[95] = {1, 2, {["1"] = 1}},\n\t[94] = { {["1"]=1, ["2"]=2}, {1, ["2"]=2}, ["3"] = 3 },\n\ttrue,\n\tfalse,\n\tnil,\n\t{\n\t\t["integer"]= 1234567890,\n\t\treal=-9876.543210,\n\t\te= 0.123456789e-12,\n\t\tE= 1.234567890E+34,\n\t\tzero = 0,\n\t\tone = 1,\n\t\tspace = " ",\n\t\tquote = "\\"",\n\t\tbackslash = "\\\\",\n\t\tcontrols = "\\b\\f\n\\r\\t",\n\t\tslash = "/ & \\\\",\n\t\talpha= "abcdefghijklmnopqrstuvwyz",\n\t\tALPHA = "ABCDEFGHIJKLMNOPQRSTUVWYZ",\n\t\tdigit = "0123456789",\n\t\tspecial = "`1~!@#$%^&*()_+-={\':[,]}|;.</>?",\n\t\thex = "0x01230x45670x89AB0xCDEF0xabcd0xef4A",\n\t\t["true"] = true,\n\t\t["false"] = false,\n\t\t["nil"] = nil,\n\t\tarray = {nil, nil,},\n\t\tobject = { },\n\t\taddress = "50 St. James Street",\n\t\turl = "http://www.JSON.org/",\n\t\tcomment = "// /* <!-- --",\n\t\t["# -- --> */"] = " ",\n\t\t[" s p a c e d " ] = {1,2 , 3\n\n\t\t\t,\n\n\t\t\t4 , 5 , 6 ,7 },\n\t\t--[[[][][] Test multi-line comments\n\t\t\tcompact = {1,2,3,4,5,6,7},\n\t- -[luatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"]]\n\t-- ]]\n\t\tcompact = {1,2,3,4,5,6,7},\n\t\tluatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"\n\t},\n\t0.5 ,31415926535897932384626433832795028841971693993751058209749445923.\n\t,\n\t3.1415926535897932384626433832795028841971693993751058209749445923\n\t,\n\n\t1066\n\n\n\t,"rosebud"\n\n}}\n}'
+# test_str = '{root={"Test Pattern String",--{"object with 1 member"={"array with 1 element",},},{["object with 1 member"]={"array with 1 element",},},{},[]'
                # '{array={65, 23, 5},dict={mixed={1=43,2=54.33,3=False,4=9,string="value",},array={3, 6, 4},string="value",},}'
-
+    print(test_str)
     # test_str = '{array={65,23,5,},dict={mixed={43,54.33,false,9,string="value",},array={3,6,4,},string = "value",},}'
     # test_str = '{65,23,5,}'
     a1.load(test_str)
     d1 = a1.dumpDict()
-
-    # print(a1.Dict)
-    # print(a2.dumpDict())
+    # print(d1)
     a2.loadDict(d1)
     a2 .dumpLuaTable(file_path)
     a3.loadLuaTable(file_path)
