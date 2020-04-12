@@ -1,0 +1,1 @@
+{root={member={'"array with 1 element"',},1="Test Pattern String",["object with 1 member"]={'"array with 1 element"',},},}
