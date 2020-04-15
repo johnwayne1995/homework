@@ -2,7 +2,7 @@
 
 class PyLuaTblParser:
     def __init__(self):
-        self.special_signal={'\t','\n','\\','\'','\"','\a','\b','\f','\r','\v'}
+        self.special_signal=['\\t','\\n','\\\\','\\\'','\\\"','\\a','\\b','\\f','\\r','\\v']
         self.string_loc=list()#字符串的位置下标
         # self.DeepLayer=list()#记录每个下标所在层深度的list
         self.raw = ''#初始输入
@@ -49,15 +49,31 @@ class PyLuaTblParser:
 
 
     def contain_equal(self,input):
-
+        stack_bracket = list()  # 记录匹配括号用的栈
+        stack_quotation_single = list()
+        stack_quotation_double = list()
         index=0
         for s in input:
-            if(s=='='):
+            # print len(stack_bracket)
+            if(s=='=' and len(stack_quotation_single) == 0 and len(stack_quotation_double) == 0 and len(stack_bracket) == 0):
                 return index
-            if(s==','):
+            if(s==',' and len(stack_quotation_single) == 0 and len(stack_quotation_double) == 0 and len(stack_bracket) == 1):
                 return 'No_contain'
             #还有一种情况是字符串，占位，遇到再写
-
+            if (s == '\'' and len(stack_quotation_double) == 0):
+                if (len(stack_quotation_single) == 0):
+                    stack_quotation_single.append('into_str')
+                else:
+                    stack_quotation_single.pop()
+            if (s == '\"' and len(stack_quotation_single) == 0):
+                if (len(stack_quotation_double) == 0):
+                    stack_quotation_double.append('into_str')
+                else:
+                    stack_quotation_double.pop()
+            if (s == "{" and len(stack_quotation_single) == 0 and len(stack_quotation_double) == 0):
+                stack_bracket.append('into_layer')
+            if (s == "}" and len(stack_quotation_single) == 0 and len(stack_quotation_double) == 0):
+                stack_bracket.pop()
             index+=1
         return 'No_contain'
 
@@ -130,9 +146,10 @@ class PyLuaTblParser:
         last_comma=0
         index=0
         sum=1
-        # print(size)
-        # print(input)
-        for s in input:
+
+        while index<len(input):
+            s=input[index]
+            # print s+str(len(stack_quotation_double))
             if (s == ',' and len(stack_bracket) == 0 and len(stack_quotation_single) == 0 and len(
                     stack_quotation_double) == 0):
                 # keys.append()
@@ -141,12 +158,12 @@ class PyLuaTblParser:
                 sum+=1
                 values.append(input[last_comma:index])
                 last_comma=index+1
-            if (s == '\''):
+            if (s == '\'' and len(stack_quotation_double) == 0):
                 if (len(stack_quotation_single) == 0):
                     stack_quotation_single.append('into_str')
                 else:
                     stack_quotation_single.pop()
-            if (s == '\"'):
+            if (s == '\"' and len(stack_quotation_single) == 0):
                 if (len(stack_quotation_double) == 0):
                     stack_quotation_double.append('into_str')
                 else:
@@ -155,6 +172,11 @@ class PyLuaTblParser:
                 stack_bracket.append('into_layer')
             if (s == "}" and len(stack_quotation_single) == 0 and len(stack_quotation_double) == 0):
                 stack_bracket.pop()
+            if (index < len(input) - 2):
+                if (input[index:index + 2] in self.special_signal):
+                    # print(input[index,index+2])
+                    index += 1
+
             index+=1
 
 
@@ -190,19 +212,18 @@ class PyLuaTblParser:
                 re_list.append(tmp_val)
 
                 last_comma = index + 1
-            if (s == '\''):
+            if (s == '\'' and len(stack_quotation_double) == 0):
                 if (len(stack_quotation_single) == 0):
                     stack_quotation_single.append('into_str')
                 else:
                     stack_quotation_single.pop()
-            if (s == '\"'):
+            if (s == '\"' and len(stack_quotation_single) == 0):
                 if (len(stack_quotation_double) == 0):
                     stack_quotation_double.append('into_str')
                 else:
                     stack_quotation_double.pop()
             index += 1
         if(sum==0):
-
             if(self.is_int(input)):#input值是整数
                 input = int(input)
             elif(self.is_float(input)):#input值是浮点数
@@ -217,28 +238,56 @@ class PyLuaTblParser:
         去注释
         :return:
         '''
+        # print input
         s_Commentsless = ''
         Comment_flag=0
         stack_quotation_single = list()
         stack_quotation_double = list()
-
-        for s in input:
+        # Comment_flag==2表示单行注释 Comment_flag=4表示多行
+        index=0
+        while index<len(input):
+            # print Comment_flag
+            s=input[index]
             if ((ord(s)==10 or ord(s)==13) and len(stack_quotation_single) == 0 and len(stack_quotation_double) == 0):
-                Comment_flag=0
-            elif(s=='-'):
-                Comment_flag+=1
-            elif(Comment_flag!=2):
+                if(Comment_flag==2):
+                    Comment_flag=0
+            elif (input[index:index + 4 if index + 4 < len(input) else -1] == '--]]' and len(
+                    stack_quotation_single) == 0 and len(stack_quotation_double) == 0):
+                Comment_flag = 0
+                index+=4
+            elif (input[index:index + 2 if index + 2 < len(input) else -1] == ']]' and len(
+                    stack_quotation_single) == 0 and len(stack_quotation_double) == 0):
+                Comment_flag = 0
+                index+=2
+            elif (input[index:index + 4 if index + 4 < len(input) else -1] == '--[[' and len(
+                    stack_quotation_single) == 0 and len(stack_quotation_double) == 0):
+                Comment_flag = 4
+                # print Comment_flag
+            elif(Comment_flag!=4 and input[index:index+2 if index+2<len(input) else -1]=='--' and len(stack_quotation_single) == 0 and len(stack_quotation_double) == 0):
+                Comment_flag=2
+            if(Comment_flag!=2 and Comment_flag!=4):
                 s_Commentsless+=s
-            if (s == '\''):
-                if (len(stack_quotation_single) == 0):
-                    stack_quotation_single.append('into_str')
-                else:
-                    stack_quotation_single.pop()
-            if (s == '\"'):
-                if (len(stack_quotation_double) == 0):
-                    stack_quotation_double.append('into_str')
-                else:
-                    stack_quotation_double.pop()
+                if (s == '\'' and len(stack_quotation_double) == 0):
+                    # s_Commentsless += str(len(stack_quotation_single))
+                    if (len(stack_quotation_single) == 0):
+                        stack_quotation_single.append('into_str')
+                    else:
+                        stack_quotation_single.pop()
+                if (s == '\"' and len(stack_quotation_single) == 0):
+                    # s_Commentsless += str(len(stack_quotation_double))
+                    if (len(stack_quotation_double) == 0):
+                        stack_quotation_double.append('into_str')
+                    else:
+                        stack_quotation_double.pop()
+                if (index < len(input) - 2):
+                    if (input[index:index + 2] in self.special_signal):
+                        # print(input[index,index+2])
+                        index+=1
+                        s_Commentsless += input[index:index + 1]
+                        # index += 1
+                        # s_Commentsless += '?'
+                        # s_Commentsless += str(len(stack_quotation_double))
+            index+=1
         return s_Commentsless
 
     def rm_slash_n(self, input):
@@ -275,22 +324,37 @@ class PyLuaTblParser:
         s_blankless=''
         stack_quotation_single = list()
         stack_quotation_double = list()
-
-        for s in input:
+        index=0
+        while index<len(input):
+            s=input[index]
             if ((s == ' ' or ord(s)==10 or ord(s)==9) and len(stack_quotation_single) == 0 and len(stack_quotation_double) == 0):
                 pass
             else:
                 s_blankless+=s
-            if (s == '\''):
+            if (s == '\'' and len(stack_quotation_double) == 0):
+                # print(len(stack_quotation_single))
                 if (len(stack_quotation_single) == 0):
                     stack_quotation_single.append('into_str')
                 else:
                     stack_quotation_single.pop()
-            if (s == '\"'):
+            if (s == '\"' and len(stack_quotation_single) == 0):
                 if (len(stack_quotation_double) == 0):
                     stack_quotation_double.append('into_str')
                 else:
                     stack_quotation_double.pop()
+            if(index<len(input)-2):
+                if(input[index:index+2] in self.special_signal):
+                    # print(input[index,index+2])
+                    index+=1
+                    s_blankless += input[index:index+1]
+                    # index+=1
+                    # s_blankless +='?'
+
+
+
+                # else:
+                #     s_blankless += '\\'
+            index+=1
 
         return s_blankless
 
@@ -332,14 +396,14 @@ class PyLuaTblParser:
         读取Lua table数据，输入s为一个符合Lua table定义的字符串，无返回值；若遇到Lua table格式错误的应该抛出异常
         :return:
         '''
-        try:
-            self.raw=s
-            # self.norm_Table = self.rmComments(s)  # 去注释
-            # self.norm_Table=self.rmblank(self.norm_Table)#去空格规范化Table
-            self.norm_Table = self.rm_slash_n(s)  # 去空格规范化Table
 
-        except:
-            raise Exception("The format of input is wrong")
+        self.raw=s
+        self.norm_Table = self.rmComments(s)  # 去注释
+        self.norm_Table=self.rmblank(self.norm_Table)#去空格规范化Table
+        # self.norm_Table = self.rm_slash_n(s)  # 去空格规范化Table
+        print(self.norm_Table)
+        # except:
+        #     raise Exception("The format of input is wrong")
 
         pass
 
@@ -409,19 +473,24 @@ class PyLuaTblParser:
         :return:
         '''
         #如果最外有{}去掉
-        if(input[0]=='{' and input[-1]=='}'):
+        if(input=='{}'):
+            input='nil'
+        elif(input[0]=='{' and input[-1]=='}'):
             input=input[1:-1]
         # print(input)
         child_Dict=dict()
         # DeepLayer=self.Bracket_Match(input)
         size=self.include_equal(input)
-        if  size>0: # 如果同一级下的非字符串里有 = 符号，说明用dict数据类型，反之用list
+        # print 'size:'+str(size)
+        if size>0: # 如果同一级下的非字符串里有 = 符号，说明用dict数据类型，反之用list
 
             keys_values=self.find_key_value(input) #找到key和value两两组成tuple
             # print(keys_values)
             for key,value in keys_values:
+                if(value[0]=='{' and value[-1]=='}' ):
 
-                if(self.contain_equal(value)!='No_contain'):
+                    pass
+                elif(self.contain_equal(value)!='No_contain'):#最外层{}外面又没有等于号
                     contain_index=self.contain_equal(value)
                     key=value[:contain_index]
 
@@ -434,8 +503,10 @@ class PyLuaTblParser:
                     value=value[contain_index+1:]
 
 
+                print value
                 child_Dict[key]=self.child_trans(value) #套娃
         else:
+            # print input
             return self.str2list(input)
         self.Dict=child_Dict
 
@@ -445,10 +516,10 @@ class PyLuaTblParser:
         返回一个dict，包含类中的数据
         :return:
         '''
-        print self.norm_Table
-        return self.norm_Table
+        # print self.norm_Table
+        # return self.norm_Table
         # return self.raw
-        # return self.child_trans(self.norm_Table)#可自身递归的函数
+        return self.child_trans(self.norm_Table)#可自身递归的函数
 
 
     def dumpLuaTable(self,f):
@@ -476,21 +547,18 @@ if __name__ == '__main__':
     a2 = PyLuaTblParser()
     a3 = PyLuaTblParser()
 
-    test_str = '{array={ 65,23,5,}, dict={mixed={43,54.33,false,9,string = "value",},array={3,6,4,},string="value",},}'
-    test_str = '{array={ 65,23,5,}, dict={mixed={43,54.33,false,9,string = "value",},array={3,6,4,},string="value",},}'
-    test_str = '{array={ 65,23,5,}, dict={mixed={43,54.33,false,9,string = "value",},array={3,6,4,},string="value",},}'
-    test_str = '{root={"Test Pattern String",--member={"array with 1 element",},\n["object with 1 member"]={"array with 1 element",},},}'
-    test_str= '{{\nroot = {\n\t"Test Pattern String",\n\t-- {"object with 1 member" = {"array with 1 element",},},\n\t{["object with 1 member"] = {"array with 1 element",},},\n\t{},\n\t[99] = -42,\n\t[98] = {{}},\n\t[97] = {{},{}},\n\t[96] = {{}, 1, 2, nil},\n\t[95] = {1, 2, {["1"] = 1}},\n\t[94] = { {["1"]=1, ["2"]=2}, {1, ["2"]=2}, ["3"] = 3 },\n\ttrue,\n\tfalse,\n\tnil,\n\t{\n\t\t["integer"]= 1234567890,\n\t\treal=-9876.543210,\n\t\te= 0.123456789e-12,\n\t\tE= 1.234567890E+34,\n\t\tzero = 0,\n\t\tone = 1,\n\t\tspace = " ",\n\t\tquote = "\\"",\n\t\tbackslash = "\\\\",\n\t\tcontrols = "\\b\\f\n\\r\\t",\n\t\tslash = "/ & \\\\",\n\t\talpha= "abcdefghijklmnopqrstuvwyz",\n\t\tALPHA = "ABCDEFGHIJKLMNOPQRSTUVWYZ",\n\t\tdigit = "0123456789",\n\t\tspecial = "`1~!@#$%^&*()_+-={\':[,]}|;.</>?",\n\t\thex = "0x01230x45670x89AB0xCDEF0xabcd0xef4A",\n\t\t["true"] = true,\n\t\t["false"] = false,\n\t\t["nil"] = nil,\n\t\tarray = {nil, nil,},\n\t\tobject = { },\n\t\taddress = "50 St. James Street",\n\t\turl = "http://www.JSON.org/",\n\t\tcomment = "// /* <!-- --",\n\t\t["# -- --> */"] = " ",\n\t\t[" s p a c e d " ] = {1,2 , 3\n\n\t\t\t,\n\n\t\t\t4 , 5 , 6 ,7 },\n\t\t--[[[][][] Test multi-line comments\n\t\t\tcompact = {1,2,3,4,5,6,7},\n\t- -[luatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"]]\n\t-- ]]\n\t\tcompact = {1,2,3,4,5,6,7},\n\t\tluatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"\n\t},\n\t0.5 ,31415926535897932384626433832795028841971693993751058209749445923.\n\t,\n\t3.1415926535897932384626433832795028841971693993751058209749445923\n\t,\n\n\t1066\n\n\n\t,"rosebud"\n\n}}\n}'
-# test_str = '{root={"Test Pattern String",--{"object with 1 member"={"array with 1 element",},},{["object with 1 member"]={"array with 1 element",},},{},[]'
-               # '{array={65, 23, 5},dict={mixed={1=43,2=54.33,3=False,4=9,string="value",},array={3, 6, 4},string="value",},}'
-    print(test_str)
+    # test_str = '{array={ 65,23,5,},{mixed={43,54.33,false,9,string = "value",},array={3,6,4,},string="value",},}'
+    test_str= '{\nroot = {\n\t"Test Pattern String",\n\t-- {"object with 1 member" = {"array with 1 element",},},\n\t{["object with 1 member"] = {"array with 1 element",},},\n\t{},\n\t[99] = -42,\n\t[98] = {{}},\n\t[97] = {{},{}},\n\t[96] = {{}, 1, 2, nil},\n\t[95] = {1, 2, {["1"] = 1}},\n\t[94] = { {["1"]=1, ["2"]=2}, {1, ["2"]=2}, ["3"] = 3 },\n\ttrue,\n\tfalse,\n\tnil,\n\t{\n\t\t["integer"]= 1234567890,\n\t\treal=-9876.543210,\n\t\te= 0.123456789e-12,\n\t\tE= 1.234567890E+34,\n\t\tzero = 0,\n\t\tone = 1,\n\t\tspace = " ",\n\t\tquote = "\\"",\n\t\tbackslash = "\\\\",\n\t\tcontrols = "\\b\\f\\n\\r\\t",\n\t\tslash = "/ & \\\\",\n\t\talpha= "abcdefghijklmnopqrstuvwyz",\n\t\tALPHA = "ABCDEFGHIJKLMNOPQRSTUVWYZ",\n\t\tdigit = "0123456789",\n\t\tspecial = "`1~!@#$%^&*()_+-={\':[,]}|;.</>?",\n\t\thex = "0x01230x45670x89AB0xCDEF0xabcd0xef4A",\n\t\t["true"] = true,\n\t\t["false"] = false,\n\t\t["nil"] = nil,\n\t\tarray = {nil, nil,},\n\t\tobject = { },\n\t\taddress = "50 St. James Street",\n\t\turl = "http://www.JSON.org/",\n\t\tcomment = "// /* <!-- --",\n\t\t["# -- --> */"] = " ",\n\t\t[" s p a c e d " ] = {1,2 , 3\n\n\t\t\t,\n\n\t\t\t4 , 5 , 6 ,7 },\n\t\t--[[[][][] Test multi-line comments\n\t\t\tcompact = {1,2,3,4,5,6,7},\n\t- -[luatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"]]\n\t-- ]]\n\t\tcompact = {1,2,3,4,5,6,7},\n\t\tluatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"\n\t},\n\t0.5 ,31415926535897932384626433832795028841971693993751058209749445923.\n\t,\n\t3.1415926535897932384626433832795028841971693993751058209749445923\n\t,\n\n\t1066\n\n\n\t,"rosebud"\n\n},}'
+    # test_str = '{\nroot = {\n\t"Test Pattern String",\n\t-- {"object with 1 member" = {"array with 1 element",},},\n\t{"object with 1 member" = {"array with 1 element",},},\n\t{},\n\t[99] = -42,\n\t[98] = {{}},\n\t[97] = {{},{}},\n\t[96] = {{}, 1, 2, nil},\n\t[95] = {1, 2, {["1"] = 1}},\n\t[94] = { {["1"]=1, ["2"]=2}, {1, ["2"]=2}, ["3"] = 3 },\n\ttrue,\n\tfalse,\n\tnil,\n\t{\n\t\t["integer"]= 1234567890,\n\t\treal=-9876.543210,\n\t\te= 0.123456789e-12,\n\t\tE= 1.234567890E+34,\n\t\tzero = 0,\n\t\tone = 1,\n\t\tspace = " ",\n\t\tquote = "\\"",\n\t\tbackslash = "\\\\",\n\t\tcontrols = "\\b\\f\\n\\r\\t",\n\t\tslash = "/ & \\\\",\n\t\talpha= "abcdefghijklmnopqrstuvwyz",\n\t\tALPHA = "ABCDEFGHIJKLMNOPQRSTUVWYZ",\n\t\tdigit = "0123456789",\n\t\tspecial = "`1~!@#$%^&*()_+-={\':[,]}|;.</>?",\n\t\thex = "0x01230x45670x89AB0xCDEF0xabcd0xef4A",\n\t\t["true"] = true,\n\t\t["false"] = false,\n\t\t["nil"] = nil,\n\t\tarray = {nil, nil,},\n\t\tobject = { },\n\t\taddress = "50 St. James Street",\n\t\turl = "http://www.JSON.org/",\n\t\tcomment = "// /* <!-- --",\n\t\t["# -- --> */"] = " ",\n\t\t[" s p a c e d " ] = {1,2 , 3\n\n\t\t\t,\n\n\t\t\t4 , 5 , 6 ,7 },\n\t\t--[[[][][] Test multi-line comments\n\t\t\tcompact = {1,2,3,4,5,6,7},\n\t- -[luatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"]]\n\t-- ]]\n\t\tcompact = {1,2,3,4,5,6,7},\n\t\tluatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"\n\t},\n\t0.5 ,31415926535897932384626433832795028841971693993751058209749445923.\n\t,\n\t3.1415926535897932384626433832795028841971693993751058209749445923\n\t,\n\n\t1066\n\n\n\t,"rosebud"\n\n},}'
+
+    # print(test_str)
     # test_str = '{array={65,23,5,},dict={mixed={43,54.33,false,9,string="value",},array={3,6,4,},string = "value",},}'
     # test_str = '{65,23,5,}'
     a1.load(test_str)
     d1 = a1.dumpDict()
-    # print(d1)
-    a2.loadDict(d1)
-    a2 .dumpLuaTable(file_path)
-    a3.loadLuaTable(file_path)
-    d3 = a3.dumpDict()
+    print(d1)
+    # a2.loadDict(d1)
+    # a2 .dumpLuaTable(file_path)
+    # a3.loadLuaTable(file_path)
+    # d3 = a3.dumpDict()
     # print(d3)
