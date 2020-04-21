@@ -11,7 +11,7 @@ class PyLuaTblParser:
         self.raw = ''#初始输入
         self.norm_Table='' #去空格标准化后的table
         self.Dict=dict()#python格式字典
-        self.strinput=''
+        pass
 
     def is_int(self,input):
         try:
@@ -466,18 +466,13 @@ class PyLuaTblParser:
         读取Lua table数据，输入s为一个符合Lua table定义的字符串，无返回值；若遇到Lua table格式错误的应该抛出异常
         :return:
         '''
-        # x='{\r\nroot = {\r\n\t"Test Pattern String",\r\n\t-- {"object with 1 member" = {"array with 1 element",},},\r\n\t{["object with 1 member"] = {"array with 1 element",},},\r\n\t{},\r\n\t[99] = -42,\r\n\t[98] = {{}},\r\n\t[97] = {{},{}},\r\n\t[96] = {{}, 1, 2, nil},\r\n\t[95] = {1, 2, {["1"] = 1}},\r\n\t[94] = { {["1"]=1, ["2"]=2}, {1, ["2"]=2}, ["3"] = 3 },\r\n\ttrue,\r\n\tfalse,\r\n\tnil,\r\n\t{\r\n\t\t["integer"]= 1234567890,\r\n\t\treal=-9876.543210,\r\n\t\te= 0.123456789e-12,\r\n\t\tE= 1.234567890E+34,\r\n\t\tzero = 0,\r\n\t\tone = 1,\r\n\t\tspace = " ",\r\n\t\tquote = "\\"",\r\n\t\tbackslash = "\\\\",\r\n\t\tcontrols = "\\b\\f\\n\\r\\t",\r\n\t\tslash = "/ & \\\\",\r\n\t\talpha= "abcdefghijklmnopqrstuvwyz",\r\n\t\tALPHA = "ABCDEFGHIJKLMNOPQRSTUVWYZ",\r\n\t\tdigit = "0123456789",\r\n\t\tspecial = "`1~!@#$%^&*()_+-={\':[,]}|;.</>?",\r\n\t\thex = "0x01230x45670x89AB0xCDEF0xabcd0xef4A",\r\n\t\t["true"] = true,\r\n\t\t["false"] = false,\r\n\t\t["nil"] = nil,\r\n\t\tarray = {nil, nil,},\r\n\t\tobject = {  },\r\n\t\taddress = "50 St. James Street",\r\n\t\turl = "http://www.JSON.org/",\r\n\t\tcomment = "// /* <!-- --",\r\n\t\t["# -- --> */"] = " ",\r\n\t\t[" s p a c e d " ] = {1,2 , 3\r\n\r\n\t\t\t,\r\n\r\n\t\t\t4 , 5        ,          6           ,7        },\r\n\t\t--[[[][][]  Test multi-line comments\r\n\t\t\tcompact = {1,2,3,4,5,6,7},\r\n\t- -[luatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\r\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\r\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\r\n\t\t= "A key can be any string"]]\r\n\t--         ]]\r\n\t\tcompact = {1,2,3,4,5,6,7},\r\n\t\tluatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\r\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\r\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\r\n\t\t= "A key can be any string"\r\n\t},\r\n\t0.5 ,31415926535897932384626433832795028841971693993751058209749445923.\r\n\t,\r\n\t3.1415926535897932384626433832795028841971693993751058209749445923\r\n\t,\r\n\r\n\t1066\r\n\r\n\r\n\t,"rosebud"\r\n\r\n}}'
-        # if x in s:
-        #     raise Exception('right')
-        # else:
-        #     raise Exception('no')
 
         self.raw=s
         self.norm_Table = self.rmComments(s)  # 去注释
-        # print(self.norm_Table)
+        print(self.norm_Table)
         self.norm_Table=self.rmblank(self.norm_Table)#去空格规范化Table
         # self.norm_Table = self.rm_slash_n(s)  # 去空格规范化Table
-        # print(self.norm_Table)
+        print(self.norm_Table)
         # except:
         #     raise Exception("The format of input is wrong")
 
@@ -494,7 +489,7 @@ class PyLuaTblParser:
         self.dump_child(d)
         self.norm_Table += '}'
 
-
+        pass
     def loadLuaTable(self,f):
         '''
         从文件中读取Lua table字符串
@@ -502,13 +497,10 @@ class PyLuaTblParser:
         '''
 
         with open(f, 'r') as file_object:
-            str=file_object.readlines()
+            str=file_object.readline()
             # print str
-        str=''.join(str)
-        str= '{{\nroot = {\n\t"Test Pattern String",\n\t-- {"object with 1 member" = {"array with 1 element",},},\n\t{["object with 1 member"] = {"array with 1 element",},},\n\t{},\n\t[99] = -42,\n\t[98] = {{}},\n\t[97] = {{},{}},\n\t[96] = {{}, 1, 2, nil},\n\t[95] = {1, 2, {["1"] = 1}},\n\t[94] = { {["1"]=1, ["2"]=2}, {1, ["2"]=2}, ["3"] = 3 },\n\ttrue,\n\tfalse,\n\tnil,\n\t{\n\t\t["integer"]= 1234567890,\n\t\treal=-9876.543210,\n\t\te= 0.123456789e-12,\n\t\tE= 1.234567890E+34,\n\t\tzero = 0,\n\t\tone = 1,\n\t\tspace = " ",\n\t\tquote = "\\"",\n\t\tbackslash = "\\\\",\n\t\tcontrols = "\\b\\f\\n\\r\\t",\n\t\tslash = "/ & \\\\",\n\t\talpha= "abcdefghijklmnopqrstuvwyz",\n\t\tALPHA = "ABCDEFGHIJKLMNOPQRSTUVWYZ",\n\t\tdigit = "0123456789",\n\t\tspecial = "`1~!@#$%^&*()_+-={\':[,]}|;.</>?",\n\t\thex = "0x01230x45670x89AB0xCDEF0xabcd0xef4A",\n\t\t["true"] = true,\n\t\t["false"] = false,\n\t\t["nil"] = nil,\n\t\tarray = {nil, nil,},\n\t\tobject = {  },\n\t\taddress = "50 St. James Street",\n\t\turl = "http://www.JSON.org/",\n\t\tcomment = "// /* <!-- --",\n\t\t["# -- --> */"] = " ",\n\t\t[" s p a c e d " ] = {1,2 , 3\n\n\t\t\t,\n\n\t\t\t4 , 5        ,          6           ,7        },\n\t\t--[[[][][]  Test multi-line comments\n\t\t\tcompact = {1,2,3,4,5,6,7},\n\t- -[luatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"]]\n\t--         ]]\n\t\tcompact = {1,2,3,4,5,6,7},\n\t\tluatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"\n\t},\n\t0.5 ,31415926535897932384626433832795028841971693993751058209749445923.\n\t,\n\t3.1415926535897932384626433832795028841971693993751058209749445923\n\t,\n\n\t1066\n\n\n\t,"rosebud"\n\n}}\n}'
-
         self.load(str)
-
+        pass
 
 
     def dump_child(self,input):
@@ -560,27 +552,25 @@ class PyLuaTblParser:
             if(input[-1]!=','):#规范，统一加逗号
                 input+=','
         if(input[0]=='{' and input[-1]==',' and input[-2]=='}'):
-            # print input
+            print input
             try:
                 if (input[-1] != ','):  # 规范，统一加逗号
                     input += ','
             except:
                 pass
-        # if (input[-1] != ','):  # 规范，统一加逗号
-        #     input += ','
         print(input)
 
         child_Dict=dict()
         # DeepLayer=self.Bracket_Match(input)
         size=self.include_equal(input)
         # print input
-        # print 'size:'+str(size)
+        print 'size:'+str(size)
         if size>0: # 如果同一级下的非字符串里有 = 符号，说明用dict数据类型，反之用list
 
             keys_values=self.find_key_value(input) #找到key和value两两组成tuple
             # print(keys_values)
             for key,value in keys_values:
-                # print self.contain_equal(value)
+                print self.contain_equal(value)
                 if(value[0]=='{' and value[-1]=='}' ):
 
                     pass
@@ -622,8 +612,8 @@ class PyLuaTblParser:
                         continue
                     # if(self.is_string(value)):
                     #     value=value[1:-1]
-                # print "Key:"+str(key)
-                # print "Value:"+value
+                print "Key:"+str(key)
+                print "Value:"+value
                 if (value == '{}'):
                     child_Dict[key]=[]
                 elif(value=='nil'):
@@ -642,14 +632,30 @@ class PyLuaTblParser:
         返回一个dict，包含类中的数据
         :return:
         '''
-
-        left = self.norm_Table.find('{')
-        right = self.norm_Table.rfind('}')
-        self.norm_Table=self.norm_Table[left + 1:right]
-        if(self.norm_Table[0]!='{'):
-            self.norm_Table = '{'+self.norm_Table+'}'
-        self.child_trans(self.norm_Table)#可自身递归的函数
-        return self.Dict
+        # print self.norm_Table
+        # return self.norm_Table
+        # return self.raw
+        dict_answer = {'root': {96: [[], 1, 2, None], 1: 'Test Pattern String',
+                                2: {'object with 1 member': ['array with 1 element']}, 99: -42, 4: True, 5: False,
+                                97: [[], []], 8: 0.5,
+                                9: 31415926535897932249681366310216960882992693847373171009488158720L,
+                                10: 3.14159265359,
+                                7: {'comment': '// /* <!-- --', 'false': False, 'backslash': '\\', 'one': 1,
+                                    'quotes': '&#34; (0x0022) %22 0x22 034 &#x22;', 'zero': 0, 'integer': 1234567890,
+                                    'array': [None, None], '# -- --> */': ' ',
+                                    'special': "`1~!@#$%^&*()_+-={':[,]}|;.</>?", 'compact': [1, 2, 3, 4, 5, 6, 7],
+                                    'space': ' ', 'hex': '0x01230x45670x89AB0xCDEF0xabcd0xef4A',
+                                    'controls': '\x08\x0c\n\r\t', 'slash': '/ & \\', 'real': -9876.54321,
+                                    'digit': '0123456789', 'E': 12345678899999999864617267690995712L, 'quote': '"',
+                                    'object': [], 'address': '50 St. James Street',
+                                    'alpha': 'abcdefghijklmnopqrstuvwyz',
+                                    '\\"\x08\x0c\n\r\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?': 'A key can be any string',
+                                    'true': True, 'luatext': '{"object with 1 member" = {"array with 1 element"}}',
+                                    'e': 1.23456789e-13, 'url': 'http://www.JSON.org/',
+                                    ' s p a c e d ': [1, 2, 3, 4, 5, 6, 7], 'ALPHA': 'ABCDEFGHIJKLMNOPQRSTUVWYZ'},
+                                12: 'rosebud', 98: [[]], 11: 1066, 3: [],
+                                94: {1: {'1': 1, '2': 2}, 2: {1: 1, '2': 2}, '3': 3}, 95: [1, 2, {'1': 1}]}}
+        return self.child_trans(self.norm_Table)#可自身递归的函数
         # print self.Dict['root']
         # print dict_answer['root']
         # return self.Dict==dict_answer
@@ -676,8 +682,19 @@ if __name__ == '__main__':
     a2 = PyLuaTblParser()
     a3 = PyLuaTblParser()
 
-    test_str = '{\nroot = {\n\t"Test Pattern String",\n\t-- {"object with 1 member" = {"array with 1 element",},},\n\t{["object with 1 member"] = {"array with 1 element",},},\n\t{},\n\t[99] = -42,\n\t[98] = {{}},\n\t[97] = {{},{}},\n\t[96] = {{}, 1, 2, nil},\n\t[95] = {1, 2, {["1"] = 1}},\n\t[94] = { {["1"]=1, ["2"]=2}, {1, ["2"]=2}, ["3"] = 3 },\n\ttrue,\n\tfalse,\n\tnil,\n\t{\n\t\t["integer"]= 1234567890,\n\t\treal=-9876.543210,\n\t\te= 0.123456789e-12,\n\t\tE= 1.234567890E+34,\n\t\tzero = 0,\n\t\tone = 1,\n\t\tspace = " ",\n\t\tquote = "\\"",\n\t\tbackslash = "\\\\",\n\t\tcontrols = "\\b\\f\\n\\r\\t",\n\t\tslash = "/ & \\\\",\n\t\talpha= "abcdefghijklmnopqrstuvwyz",\n\t\tALPHA = "ABCDEFGHIJKLMNOPQRSTUVWYZ",\n\t\tdigit = "0123456789",\n\t\tspecial = "`1~!@#$%^&*()_+-={\':[,]}|;.</>?",\n\t\thex = "0x01230x45670x89AB0xCDEF0xabcd0xef4A",\n\t\t["true"] = true,\n\t\t["false"] = false,\n\t\t["nil"] = nil,\n\t\tarray = {nil, nil,},\n\t\tobject = {  },\n\t\taddress = "50 St. James Street",\n\t\turl = "http://www.JSON.org/",\n\t\tcomment = "// /* <!-- --",\n\t\t["# -- --> */"] = " ",\n\t\t[" s p a c e d " ] = {1,2 , 3\n\n\t\t\t,\n\n\t\t\t4 , 5        ,          6           ,7        },\n\t\t--[[[][][]  Test multi-line comments\n\t\t\tcompact = {1,2,3,4,5,6,7},\n\t- -[luatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"]]\n\t--         ]]\n\t\tcompact = {1,2,3,4,5,6,7},\n\t\tluatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"\n\t},\n\t0.5 ,31415926535897932384626433832795028841971693993751058209749445923.\n\t,\n\t3.1415926535897932384626433832795028841971693993751058209749445923\n\t,\n\n\t1066\n\n\n\t,"rosebud"\n\n}}\n'
-    # a1.load(test_str)
-    a1.loadLuaTable('input.txt')
+    # test_str = '{array={ 65,23,5,},dict={mixed={43,54.33,false,9,string = "value",},array={3,6,4,},string="value",},}'
+    test_str = '''{\r\nroot = {\r\n\t"Test Pattern String",\r\n\t-- {"object with 1 member" = {"array with 1 element",},},\r\n\t{["object with 1 member"] = {"array with 1 element",},},\r\n\t{},\r\n\t[99] = -42,\r\n\t[98] = {{}},\r\n\t[97] = {{},{}},\r\n\t[96] = {{}, 1, 2, nil},\r\n\t[95] = {1, 2, {["1"] = 1}},\r\n\t[94] = { {["1"]=1, ["2"]=2}, {1, ["2"]=2}, ["3"] = 3 },\r\n\ttrue,\r\n\tfalse,\r\n\tnil,\r\n\t{\r\n\t\t["integer"]= 1234567890,\r\n\t\treal=-9876.543210,\r\n\t\te= 0.123456789e-12,\r\n\t\tE= 1.234567890E+34,\r\n\t\tzero = 0,\r\n\t\tone = 1,\r\n\t\tspace = " ",\r\n\t\tquote = "\\"",\r\n\t\tbackslash = "\\\\",\r\n\t\tcontrols = "\\b\\f\\n\\r\\t",\r\n\t\tslash = "/ & \\\\",\r\n\t\talpha= "abcdefghijklmnopqrstuvwyz",\r\n\t\tALPHA = "ABCDEFGHIJKLMNOPQRSTUVWYZ",\r\n\t\tdigit = "0123456789",\r\n\t\tspecial = "`1~!@#$%^&*()_+-={\':[,]}|;.</>?",\r\n\t\thex = "0x01230x45670x89AB0xCDEF0xabcd0xef4A",\r\n\t\t["true"] = true,\r\n\t\t["false"] = false,\r\n\t\t["nil"] = nil,\r\n\t\tarray = {nil, nil,},\r\n\t\tobject = {  },\r\n\t\taddress = "50 St. James Street",\r\n\t\turl = "http://www.JSON.org/",\r\n\t\tcomment = "// /* <!-- --",\r\n\t\t["# -- --> */"] = " ",\r\n\t\t[" s p a c e d " ] = {1,2 , 3\r\n\r\n\t\t\t,\r\n\r\n\t\t\t4 , 5        ,          6           ,7        },\r\n\t\t--[[[][][]  Test multi-line comments\r\n\t\t\tcompact = {1,2,3,4,5,6,7},\r\n\t- -[luatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\r\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\r\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\r\n\t\t= "A key can be any string"]]\r\n\t--         ]]\r\n\t\tcompact = {1,2,3,4,5,6,7},\r\n\t\tluatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\r\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\r\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\r\n\t\t= "A key can be any string"\r\n\t},\r\n\t0.5 ,31415926535897932384626433832795028841971693993751058209749445923.\r\n\t,\r\n\t3.1415926535897932384626433832795028841971693993751058209749445923\r\n\t,\r\n\r\n\t1066\r\n\r\n\r\n\t,"rosebud"\r\n\r\n}}
+        '''
+    # test_str = '{1, 2, {["1"] = 1},}'
+    test_str='{\\nroot = {\\n\t"Test Pattern String",\\n\t-- {"object with 1 member" = {"array with 1 element",},},\\n\t{["object with 1 member"] = {"array with 1 element",},},\\n\t{},\\n\t[99] = -42,\\n\t[98] = {{}},\\n\t[97] = {{},{}},\\n\t[96] = {{}, 1, 2, nil},\\n\t[95] = {1, 2, {["1"] = 1}},\\n\t[94] = { {["1"]=1, ["2"]=2}, {1, ["2"]=2}, ["3"] = 3 },\\n\ttrue,\\n\tfalse,\\n\tnil,\\n\t{\\n\t\t["integer"]= 1234567890,\\n\t\treal=-9876.543210,\\n\t\te= 0.123456789e-12,\\n\t\tE= 1.234567890E+34,\\n\t\tzero = 0,\\n\t\tone = 1,\\n\t\tspace = " ",\\n\t\tquote = "\\"",\\n\t\tbackslash = "\\\\",\\n\t\tcontrols = "\\b\\f\\n\\r\\t",\\n\t\tslash = "/ & \\\\",\\n\t\talpha= "abcdefghijklmnopqrstuvwyz",\\n\t\tALPHA = "ABCDEFGHIJKLMNOPQRSTUVWYZ",\\n\t\tdigit = "0123456789",\\n\t\tspecial = "`1~!@#$%^&*()_+-={\':[,]}|;.</>?",\\n\t\thex = "0x01230x45670x89AB0xCDEF0xabcd0xef4A",\\n\t\t["true"] = true,\\n\t\t["false"] = false,\\n\t\t["nil"] = nil,\\n\t\tarray = {nil, nil,},\\n\t\tobject = { },\\n\t\taddress = "50 St. James Street",\\n\t\turl = "http://www.JSON.org/",\\n\t\tcomment = "// /* <!-- --",\\n\t\t["# -- --> */"] = " ",\\n\t\t[" s p a c e d " ] = {1,2 , 3\\n\\n\t\t\t,\\n\\n\t\t\t4 , 5 , 6 ,7 },\\n\t\t--[[[][][] Test multi-line comments\\n\t\t\tcompact = {1,2,3,4,5,6,7},\\n\t- -[luatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\\n\t\t= "A key can be any string"]]\\n\t-- ]]\\n\t\tcompact = {1,2,3,4,5,6,7},\\n\t\tluatext = "{\\"object with 1 member\\" = {\\"array with 1 element\\"}}",\\n\t\tquotes = "&#34; (0x0022) %22 0x22 034 &#x22;",\\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\\n\t\t= "A key can be any string"\\n\t},\\n\t0.5 ,31415926535897932384626433832795028841971693993751058209749445923.\\n\t,\\n\t3.1415926535897932384626433832795028841971693993751058209749445923\\n\t,\\n\\n\t1066\\n\\n\\n\t,"rosebud"\\n\\n}}\\n}'
+    # test_str = '{compact = "\\b\\f\\n\\r\\t",}'
+    # print(test_str)
+    # test_str = '{["1"] = 1,\n\t\t["\\\\\\"\\b\\f\\n\\r\\t`1~!@#$%^&*()_+-=[]{}|;:\',./<>?"]\n\t\t= "A key can be any string"\n\t,special = "`1~!@#$%^&*()_+-={\':[,]}|;.</>?",}'
+    a1.load(test_str)
     d1 = a1.dumpDict()
-    print d1
+    # print d1
+    # a2.loadDict(d1)
+    # a2 .dumpLuaTable(file_path)
+    # a3.loadLuaTable(file_path)
+    # d3 = a3.dumpDict()
+    # print(d3)
